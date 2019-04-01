@@ -10,6 +10,35 @@ import random
 
 import model, sample, encoder
 
+class Node:
+    name = ""
+    bias = ""
+    state = [""] * 3
+    index = 0
+
+    def __init__(self, name, bias):
+        self.name = name
+        self.bias = bias
+
+    def context(self):
+        ctx = self.bias
+        i = self.index
+        while True:
+            ctx += " " + self.state[i]
+            i = (i + 1) % 3
+            if i == self.index:
+                break
+        return self.name + ": " + ctx.strip()
+
+    def say(self, message):
+        print(self.name + ": " + message)
+
+    def listen(self, message):
+        i = self.index
+        self.state[i] = message
+        i = (i + 1) % 3
+        self.index = i
+
 def interact_model(
     model_name='117M',
     seed=None,
@@ -82,27 +111,19 @@ def interact_model(
                         position = position.start() + 1
                         return text[:position].strip()
 
-        bias = ["Donald Trump is great!", "Hillary Clinton is great!", "Bernie Sanders is great!"]
-        names = ["Trump", "Clinton", "Sanders"]
-        state = [[""] * 3 for i in range(3)]
-        index = [0] * 3
-        selected = random.randint(0,2)
+        nodes = []
+        nodes.append(Node("Trump", "Donald Trump is great!"))
+        nodes.append(Node("Clinton", "Hillary Clinton is great!"))
+        nodes.append(Node("Sanders", "Bernie Sanders is great!"))
         while True:
-            ctx = bias[selected]
-            i = index[selected]
-            while True:
-                ctx += " " + state[selected][i]
-                i = (i + 1) % 3
-                if i == index[selected]:
-                    break
-            ctx = ctx.strip()
+            selected = random.randint(0,2)
+            ctx = nodes[selected].context()
             message = sampleModel(ctx)
-            print(names[selected] + ": " + message)
-            selected = random.randint(0, 2)
-            i = index[selected]
-            state[selected][i] = message
-            i = (i + 1) % 3
-            index[selected] = i
+            nodes[selected].say(message)
+            print()
+            for i in range(len(nodes)):
+                if i != selected:
+                    nodes[i].listen(message)
 
 if __name__ == '__main__':
     fire.Fire(interact_model)
