@@ -12,23 +12,25 @@ import model, sample, encoder
 
 class Node:
     name = ""
+    topic = ""
     bias = ""
     state = [""] * 3
     index = 0
 
-    def __init__(self, name, bias):
+    def __init__(self, name, topic, bias):
         self.name = name
+        self.topic = topic
         self.bias = bias
 
     def context(self):
-        ctx = self.bias
+        ctx = self.bias + " " + self.topic
         i = self.index
         while True:
             ctx += " " + self.state[i]
             i = (i + 1) % 3
             if i == self.index:
                 break
-        return self.name + ": " + ctx.strip()
+        return ctx.strip()
 
     def say(self, message):
         print(self.name + ": " + message)
@@ -111,10 +113,11 @@ def interact_model(
                         position = position.start() + 1
                         return text[:position].strip()
 
+        topic = "Build the wall!"
         nodes = []
-        nodes.append(Node("Trump", "Donald Trump is great!"))
-        nodes.append(Node("Clinton", "Hillary Clinton is great!"))
-        nodes.append(Node("Sanders", "Bernie Sanders is great!"))
+        nodes.append(Node("Trump", topic, "Donald Trump is great!"))
+        nodes.append(Node("Clinton", topic, "Hillary Clinton is great!"))
+        nodes.append(Node("Sanders", topic, "Bernie Sanders is great!"))
         while True:
             selected = random.randint(0,2)
             ctx = nodes[selected].context()
