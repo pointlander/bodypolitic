@@ -23,13 +23,14 @@ class Node:
         self.bias = bias
 
     def context(self):
-        ctx = self.bias + " " + self.topic
+        ctx = self.bias
         i = self.index
         while True:
             ctx += " " + self.state[i]
             i = (i + 1) % 3
             if i == self.index:
                 break
+        ctx += " " + self.topic
         return ctx.strip()
 
     def say(self, message):
@@ -113,13 +114,19 @@ def interact_model(
                         position = position.start() + 1
                         return text[:position].strip()
 
-        topic = "Build the wall!"
+        topic = "Build the wall:"
         nodes = []
         nodes.append(Node("Trump", topic, "Donald Trump is great!"))
         nodes.append(Node("Clinton", topic, "Hillary Clinton is great!"))
         nodes.append(Node("Sanders", topic, "Bernie Sanders is great!"))
+        last = -1
+        selected = 0
         while True:
-            selected = random.randint(0,2)
+            while True:
+                selected = random.randint(0,2)
+                if selected != last:
+                    last = selected
+                    break
             ctx = nodes[selected].context()
             message = sampleModel(ctx)
             nodes[selected].say(message)
